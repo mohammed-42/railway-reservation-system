@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Railway Reservation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#f8f9fa,#e0c3fc,#8ec5fc);min-height:100vh;} .hero{background:linear-gradient(135deg,#3a0ca3,#7209b7,#f72585);color:#fff;padding:60px 20px;text-align:center;border-radius:0 0 40px 40px;} .search-box{background:#fff;padding:25px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.12);margin-top:-30px;} .train-card{background:linear-gradient(135deg,#fff,#f3e7ff);padding:12px;border-radius:12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;} .btn-book{background:linear-gradient(135deg,#06beb6,#48b1bf);color:#fff;border:none;border-radius:8px;padding:8px 12px;}</style>
+</head>
+<body>
+  <div class="hero"><h1>🚆 Railway Reservation</h1><p>Book tickets quickly — fill one form and submit.</p></div>
+  <div class="container my-4">
+    <div class="search-box">
+      <form id="searchForm" onsubmit="searchTrains(event)">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3"><label class="form-label">From</label><select id="source" class="form-select"><option value="">Select Source</option><option>Delhi</option><option>Mumbai</option><option>Bangalore</option><option>Chennai</option><option>Kolkata</option><option>Hyderabad</option><option>Pune</option><option>Jaipur</option><option>Goa</option></select></div>
+          <div class="col-md-3"><label class="form-label">To</label><select id="destination" class="form-select"><option value="">Select Destination</option><option>Delhi</option><option>Mumbai</option><option>Bangalore</option><option>Chennai</option><option>Kolkata</option><option>Hyderabad</option><option>Pune</option><option>Jaipur</option><option>Goa</option></select></div>
+          <div class="col-md-3"><label class="form-label">Journey Date</label><input type="date" id="journeyDate" class="form-control"></div>
+          <div class="col-md-3 text-center"><button class="btn btn-primary w-100" type="submit">Search Trains</button></div>
+        </div>
+      </form>
+    </div>
+    <div id="trainResults" class="mt-4" style="display:none;"><h5 class="mb-3">Available Trains</h5><div id="trainList"></div></div>
+  </div>
+  <div class="modal fade" id="bookingModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3"><div class="modal-header border-0"><h5 class="modal-title">Confirm Booking</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="bookingForm" method="post" action="/book"><input type="hidden" name="train" id="m_train"><input type="hidden" name="source" id="m_source"><input type="hidden" name="destination" id="m_destination"><input type="hidden" name="date" id="m_date"><div class="mb-2"><label class="form-label">Passenger Name</label><input class="form-control" name="name" id="m_name" required></div><div class="mb-2"><label class="form-label">Email</label><input class="form-control" type="email" name="email" id="m_email" required></div><div class="mb-2 row"><div class="col-md-6"><label class="form-label">Coach (auto)</label><input class="form-control" id="m_coach" name="coach" readonly></div><div class="col-md-6"><label class="form-label">Seat (auto)</label><input class="form-control" id="m_seat" name="seat" readonly></div></div><div class="text-end mt-3"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-success">Confirm & Book</button></div></form></div></div></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function searchTrains(e){
+      e.preventDefault();
+      const src = document.getElementById('source').value;
+      const dst = document.getElementById('destination').value;
+      const date = document.getElementById('journeyDate').value;
+      if(!src || !dst || !date){ alert('Select source, destination and date'); return; }
+      if(src === dst){ alert('Source and destination cannot be same'); return; }
+      const res = await fetch(`/api/trains?source=${encodeURIComponent(src)}&destination=${encodeURIComponent(dst)}`);
+      const trains = await res.json();
+      const list = document.getElementById('trainList'); list.innerHTML='';
+      trains.forEach(t => {
+        const div = document.createElement('div');
+        div.className='train-card p-3';
+        div.innerHTML = `<div><strong>${t.name}</strong><div class="text-muted">${t.source} → ${t.destination}</div></div><div><button class="btn-book btn" onclick="openBooking('${escape(t.name)}','${escape(t.source)}','${escape(t.destination)}','${date}')">Book Now</button></div>`;
+        list.appendChild(div);
+      });
+      document.getElementById('trainResults').style.display='block';
+    }
+    function openBooking(train, source, destination, date){
+      train = unescape(train); source = unescape(source); destination = unescape(destination);
+      document.getElementById('m_train').value = train;
+      document.getElementById('m_source').value = source;
+      document.getElementById('m_destination').value = destination;
+      document.getElementById('m_date').value = date;
+      const coaches = ['A1','A2','B1','B2','S1','S2']; const c = coaches[Math.floor(Math.random()*coaches.length)]; const seat = Math.floor(Math.random()*72)+1;
+      document.getElementById('m_coach').value = c; document.getElementById('m_seat').value = seat;
+      const bookingModal = new bootstrap.Modal(document.getElementById('bookingModal')); bookingModal.show();
+    }
+  </script>
+</body>
+</html>

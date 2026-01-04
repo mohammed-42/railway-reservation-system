@@ -1,0 +1,5 @@
+com\example\railwayreservation\controller\BookingController.class
+com\example\railwayreservation\entity\Booking.class
+com\example\railwayreservation\repository\BookingRepository.class
+com\example\railwayreservation\RailwayReservationApplication.class
+com\example\railwayreservation\service\EmailService.class

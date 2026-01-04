@@ -3,6 +3,7 @@ package com.example.railwayreservation.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,8 +12,10 @@ public class EmailService {
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
+    @Async
     public void sendTicket(String to, String subject, String body) {
-        // Do NOT crash app if mail is unavailable
+
+        // Never block booking if email fails
         if (mailSender == null) {
             System.out.println("⚠️ MailSender not configured. Skipping email.");
             return;
@@ -26,7 +29,7 @@ public class EmailService {
             mailSender.send(message);
             System.out.println("✅ Email sent to " + to);
         } catch (Exception e) {
-            // Never let email failure break booking
+            // Email failure must NOT affect booking
             System.out.println("⚠️ Email failed: " + e.getMessage());
         }
     }
