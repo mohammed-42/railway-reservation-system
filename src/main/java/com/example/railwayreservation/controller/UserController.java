@@ -2,6 +2,7 @@ package com.example.railwayreservation.controller;
 
 import com.example.railwayreservation.entity.User;
 import com.example.railwayreservation.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -40,18 +41,29 @@ public class UserController {
         }
     }
 
-    // Handle login
+    // ✅ HANDLE LOGIN WITH SESSION
     @PostMapping("/login")
     public String login(@RequestParam String email,
                         @RequestParam String password,
-                        Model model) {
+                        Model model,
+                        HttpSession session) {
         try {
-            userService.login(email, password);
+            User user = userService.login(email, password);
+
+            // 🔥 STORE USER IN SESSION
+            session.setAttribute("loggedUser", user);
+
             return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "login";
         }
     }
-}
 
+    // OPTIONAL: LOGOUT (very useful)
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
+}
