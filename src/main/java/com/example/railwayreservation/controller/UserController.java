@@ -16,20 +16,20 @@ public class UserController {
         this.userService = userService;
     }
 
-    // Show login page
+    // LOGIN PAGE
     @GetMapping("/login")
     public String loginPage() {
         return "login";
     }
 
-    // Show register page
+    // REGISTER PAGE
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("user", new User());
         return "register";
     }
 
-    // Handle register
+    // REGISTER SUBMIT
     @PostMapping("/register")
     public String register(User user, Model model) {
         try {
@@ -41,7 +41,7 @@ public class UserController {
         }
     }
 
-    // ✅ HANDLE LOGIN WITH SESSION
+    // ✅ LOGIN SUBMIT (SESSION STORED)
     @PostMapping("/login")
     public String login(@RequestParam String email,
                         @RequestParam String password,
@@ -53,14 +53,15 @@ public class UserController {
             // 🔥 STORE USER IN SESSION
             session.setAttribute("loggedUser", user);
 
-            return "redirect:/";
+            // ✅ GO DIRECTLY TO BOOKING PAGE
+            return "redirect:/booking";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "login";
         }
     }
 
-    // OPTIONAL: LOGOUT (very useful)
+    // LOGOUT
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();

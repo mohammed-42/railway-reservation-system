@@ -27,12 +27,25 @@ public class BookingController {
         this.emailService = emailService;
     }
 
+    // ✅ ROOT → LOGIN ONLY
     @GetMapping("/")
-    public String index(Model model) {
+    public String home() {
+        return "redirect:/login";
+    }
+
+    // ✅ BOOKING PAGE (LOGIN REQUIRED)
+    @GetMapping("/booking")
+    public String bookingPage(Model model, HttpSession session) {
+
+        if (session.getAttribute("loggedUser") == null) {
+            return "redirect:/login";
+        }
+
         model.addAttribute("booking", new Booking());
         return "index";
     }
 
+    // API for trains (public)
     @GetMapping("/api/trains")
     @ResponseBody
     public List<Map<String, String>> trains(@RequestParam String source,
@@ -61,18 +74,18 @@ public class BookingController {
         return out;
     }
 
-    // 🔒 LOGIN REQUIRED BOOKING (STEP 6)
+    // ✅ BOOKING SUBMIT (LOGIN REQUIRED)
     @PostMapping("/book")
     public String book(Booking booking,
                        Model model,
                        HttpSession session) {
 
-        // 🚨 SESSION CHECK
         if (session.getAttribute("loggedUser") == null) {
             return "redirect:/login";
         }
 
         Random r = new Random();
+
         if (booking.getCoach() == null || booking.getCoach().isBlank()) {
             String[] coaches = {"A1", "A2", "B1", "B2", "S1", "S2"};
             booking.setCoach(coaches[r.nextInt(coaches.length)]);
@@ -137,7 +150,6 @@ public class BookingController {
         document.close();
     }
 
-    // Train data
     private Map<String, List<String>> buildTrainMap() {
         Map<String, List<String>> m = new HashMap<>();
         m.put("delhi-mumbai", List.of("Rajdhani Express", "Duronto Express", "Garib Rath"));
